@@ -10,6 +10,17 @@ app = FastAPI(
     version="1.0.0"
 )
 
+from fastapi.middleware.cors import CORSMiddleware
+
+# --- Adiciona CORS (Permitir Frontend) ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Em produção: ["https://app.gtmedics.com", "http://localhost:5173"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 
 # Carregar dados em memória
@@ -64,7 +75,7 @@ def search_cid(q: str = Query(..., min_length=3)):
     query = q.lower().strip()
     results = [
         item for item in CID_DB 
-        if query in item.get('descricao', '').lower() or query in item.get('codigo', '').lower()
+        if query in item.get('description', '').lower() or query in item.get('code', '').lower()
     ]
     return {"count": len(results), "results": results[:50]}
 
@@ -73,7 +84,7 @@ def get_cid_by_code(codigo: str):
     """Busca exata CID-10 por código"""
     code = codigo.upper().strip()
     for item in CID_DB:
-        if item.get('codigo') == code:
+        if item.get('code') == code:
             return item
     raise HTTPException(404, "Código CID não encontrado")
 
